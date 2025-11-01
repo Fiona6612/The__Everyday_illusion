@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Everyday Illusion</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        .header h1 {
+            color: #2c3e50;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+        }
+
+        .header p {
+            color: #5d6d7e;
+            font-size: 1.1rem;
+        }
+
+        .deck-container {
+            width: 100%;
+            max-width: 500px;
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+            padding-bottom: 50px;
+        }
+
+        .card {
+            width: 100%;
+            height: 300px;
+            position: relative;
+            perspective: 1000px;
+            animation: slideUp 0.8s ease-out;
+        }
+
+        .card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            transition: transform 0.8s;
+            transform-style: preserve-3d;
+            cursor: pointer;
+        }
+
+        .card.flipped .card-inner {
+            transform: rotateY(180deg);
+        }
+
+        .card-front, .card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            border-radius: 15px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 30px;
+        }
+
+        .card-front {
+            background-color: white;
+            color: #2c3e50;
+        }
+
+        .card-back {
+            background-color: #3498db;
+            color: white;
+            transform: rotateY(180deg);
+        }
+
+        .select-checkbox {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            display: flex;
+            align-items: center;
+            font-size: 0.9rem;
+            color: #7f8c8d;
+        }
+
+        .select-checkbox input {
+            margin-right: 5px;
+            cursor: pointer;
+        }
+
+        .question {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            line-height: 1.4;
+        }
+
+        .toast {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(52, 152, 219, 0.1);
+            color: #3498db;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        .answer {
+            font-size: 1.4rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            line-height: 1.4;
+        }
+
+        .micro-explanation {
+            font-size: 1rem;
+            opacity: 0.9;
+            line-height: 1.5;
+        }
+
+        .next-chevron {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 40px;
+            height: 40px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            opacity: 0;
+            transition: opacity 0.3s, transform 0.3s;
+            cursor: pointer;
+        }
+
+        .card.flipped .next-chevron {
+            opacity: 1;
+            animation: pulse 1.5s infinite;
+        }
+
+        .next-chevron:hover {
+            transform: translateX(-50%) scale(1.1);
+        }
+
+        .next-chevron svg {
+            width: 24px;
+            height: 24px;
+            fill: white;
+            filter: drop-shadow(0 0 3px rgba(255, 255, 255, 0.7));
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideUp {
+            from { 
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to { 
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(255, 255, 255, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0); }
+        }
+
+        .progress-indicator {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .progress-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: rgba(52, 152, 219, 0.3);
+            transition: background-color 0.3s;
+        }
+
+        .progress-dot.active {
+            background-color: #3498db;
+        }
+
+        @media (max-width: 600px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .question, .answer {
+                font-size: 1.2rem;
+            }
+            
+            .card {
+                height: 280px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>The Everyday Illusion</h1>
+        <p>Debunking common health myths</p>
+    </div>
+
+    <div class="progress-indicator">
+        <div class="progress-dot active"></div>
+        <div class="progress-dot"></div>
+    </div>
+
+    <div class="deck-container">
+        <!-- Card 1 -->
+        <div class="card" id="card1">
+            <div class="card-inner">
+                <div class="card-front">
+                    <div class="select-checkbox">
+                        <input type="checkbox" id="select1">
+                        <label for="select1">Select</label>
+                    </div>
+                    <div class="question">
+                        "White bread vs Brown bread — which actually wins for everyday health?"
+                    </div>
+                    <div class="toast">Tap to reveal</div>
+                </div>
+                <div class="card-back">
+                    <div class="answer">
+                        "White bread can be just as okay — brown color isn't proof of whole grain. Whole-grain label > color. Check fiber content."
+                    </div>
+                    <div class="micro-explanation">
+                        Many brown breads are just white bread with coloring. Look for "100% whole grain" on the label and check for at least 3g fiber per serving.
+                    </div>
+                    <div class="next-chevron" onclick="scrollToNextCard()">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card 2 -->
+        <div class="card" id="card2">
+            <div class="card-inner">
+                <div class="card-front">
+                    <div class="select-checkbox">
+                        <input type="checkbox" id="select2">
+                        <label for="select2">Select</label>
+                    </div>
+                    <div class="question">
+                        "Maida (refined flour) vs Whole wheat — is whole wheat always better?"
+                    </div>
+                    <div class="toast">Tap to reveal</div>
+                </div>
+                <div class="card-back">
+                    <div class="answer">
+                        "Usually whole wheat wins — but only if it's whole. Some 'wheat' breads are refined. Read ingredient list: 'whole' matters."
+                    </div>
+                    <div class="micro-explanation">
+                        Products labeled simply as "wheat" may contain refined flour. Always check that "whole wheat" appears as the first ingredient.
+                    </div>
+                    <div class="next-chevron" onclick="showCompletion()">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Add click event listeners to cards for flipping
+        document.querySelectorAll('.card').forEach(card => {
+            card.addEventListener('click', function(e) {
+                // Don't flip if clicking on checkbox
+                if (e.target.type !== 'checkbox') {
+                    this.classList.toggle('flipped');
+                    
+                    // Update progress indicator
+                    updateProgress(this.id);
+                }
+            });
+        });
+
+        // Function to scroll to next card
+        function scrollToNextCard() {
+            const card2 = document.getElementById('card2');
+            card2.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+
+        // Function to show completion message
+        function showCompletion() {
+            const message = document.createElement('div');
+            message.style.position = 'fixed';
+            message.style.top = '50%';
+            message.style.left = '50%';
+            message.style.transform = 'translate(-50%, -50%)';
+            message.style.backgroundColor = '#2ecc71';
+            message.style.color = 'white';
+            message.style.padding = '20px 30px';
+            message.style.borderRadius = '10px';
+            message.style.boxShadow = '0 5px 15px rgba(0,0,0,0.2)';
+            message.style.zIndex = '1000';
+            message.style.fontSize = '1.2rem';
+            message.style.fontWeight = '600';
+            message.style.animation = 'fadeIn 0.5s ease-out';
+            message.textContent = 'Great job! You\'ve completed the deck.';
+            
+            document.body.appendChild(message);
+            
+            setTimeout(() => {
+                message.style.animation = 'fadeOut 0.5s ease-out';
+                setTimeout(() => {
+                    document.body.removeChild(message);
+                }, 500);
+            }, 3000);
+        }
+
+        // Function to update progress indicator
+        function updateProgress(cardId) {
+            const dots = document.querySelectorAll('.progress-dot');
+            
+            if (cardId === 'card1') {
+                dots[0].classList.add('active');
+            } else if (cardId === 'card2') {
+                dots[1].classList.add('active');
+            }
+        }
+
+        // Add fade out animation
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes fadeOut {
+                from { opacity: 1; }
+                to { opacity: 0; }
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>
